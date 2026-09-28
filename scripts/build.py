@@ -46,8 +46,9 @@ def head(p,kind,home=False):
 def blog_header(posts):
  return f'''<div class="utility"><div><span>블로그</span><a href="/#archive">전체 글</a></div></div><header class="blog-header"><div class="brand"><a href="/" class="brand-kicker">{h(SITE.get('english','INDEPENDENT JOURNAL'))}</a><a href="/" class="brand-name">{h(SITE['name'])}</a><p>{h(SITE.get('tagline',SITE['description']))}</p></div>{search_box()}</header>{nav(posts)}'''
 def cafe_header(posts):
- mark=SITE.get('mark','✳')
- return f'''<header class="cafe-banner"><img class="cafe-banner-photo" src="/assets/images/banner.webp" alt="" width="1300" height="600"><div class="cafe-banner-inner"><span class="cafe-kicker">{h(SITE.get('english','OPEN COMMUNITY'))}</span><a class="cafe-brand" href="/">{h(SITE['name'])}<span class="banner-mark" aria-hidden="true">{mark}</span></a><p>{h(SITE.get('tagline',SITE['description']))}</p><span class="banner-caption">첫 방문부터 읽어 보는 왁싱 이야기</span></div></header>{nav(posts)}'''
+ link=SITE['marketing_url']
+ if not link.startswith('https://pf.kakao.com/'):raise ValueError('marketing_url must be a Kakao channel URL')
+ return f'''<header class="cafe-banner"><img class="cafe-banner-photo" src="/assets/images/banner.webp" alt="" width="1300" height="600"><a class="banner-cta" href="{h(link)}" aria-label="뷰티샵 마케팅 문의 — 카카오 채널로 이동"><span class="cafe-kicker">{h(SITE['name'])} · {h(SITE.get('english','WAXING JOURNAL'))}</span><strong class="banner-cta-title">뷰티샵 마케팅 문의</strong><span class="banner-cta-action">카카오 채널로 문의하기 ↗</span></a></header>{nav(posts)}'''
 def profile(posts):
  return f'''<section class="profile-panel"><img class="profile-photo" src="/assets/images/banner.webp" alt="왁싱 공간 연출 사진" width="280" height="145"><img class="profile-avatar profile-avatar-img" src="/assets/images/profile.webp" alt="" width="70" height="70"><h2>{h(SITE['name'])}</h2><span class="profile-label">{h(SITE.get('english','EDITORIAL LOG'))}</span><p>{h(SITE['description'])}</p><a class="profile-link" href="/#archive">전체 글 살펴보기 →</a></section>'''
 def category_panel(posts):
