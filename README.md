@@ -13,3 +13,7 @@
 ## 메인 배너 문의 링크
 
 배너 전체를 클릭하면 카카오 채널로 이동합니다. 문구는 `scripts/build.py`의 `cafe_header`, 주소는 `site.json`의 `marketing_url`에서 수정할 수 있습니다.
+
+## 사이트맵 · RSS · llms.txt
+
+현재 주소 `https://sillimwaxing.pages.dev`를 `site.json`의 `site_url`에 적용했습니다. 저장소 루트의 `sitemap.xml`, `rss.xml`, `llms.txt`, `robots.txt`는 `python3 scripts/build.py`를 실행하면 `content/posts/*.json` 글 목록에 맞춰 다시 생성됩니다. GitHub Actions도 글을 추가하거나 사이트 주소를 변경하면 이 파일들을 함께 커밋합니다. 메인과 상세 페이지에는 RSS 발견 태그가 들어 있습니다. 나중에 맞춤 도메인으로 바꾸면 `site_url`만 새 주소로 수정해 push하세요.

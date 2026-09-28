@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Generate an article-first blog or cafe directly in the repository root."""
 from pathlib import Path
-from datetime import date
+from datetime import date,datetime,timezone
+from email.utils import format_datetime
 from urllib.parse import quote
 import html,json,re
 ROOT=Path(__file__).resolve().parents[1]
@@ -42,7 +43,7 @@ def head(p,kind,home=False):
  schema={'@context':'https://schema.org','@type':'WebSite','name':name}
  if base:schema['url']=base+'/'
  schema_json=json.dumps(schema,ensure_ascii=False).replace('<',r'\u003c')
- return f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="{h(description)}"><meta name="theme-color" content="{color[0]}"><meta name="application-name" content="{h(name)}"><meta property="og:type" content="{'website' if home else 'article'}"><meta property="og:site_name" content="{h(name)}"><meta property="og:title" content="{h(seo_title)}"><meta property="og:description" content="{h(description)}"><meta property="og:image" content="{h(image)}"><meta name="twitter:card" content="summary_large_image">{canonical}<title>{h(seo_title)}</title><link rel="icon" type="image/x-icon" href="{h(base+'/favicon.ico')}"><link rel="icon" type="image/svg+xml" href="{h(base+'/favicon.svg')}"><link rel="apple-touch-icon" href="{h(base+'/apple-touch-icon.png')}"><link rel="stylesheet" href="/assets/style.css"><script type="application/ld+json">{schema_json}</script><script defer src="/assets/app.js"></script></head><body class="{kind}" style="--ink:{color[0]};--paper:{color[1]};--accent:{color[2]}"><a class="skip" href="#main">본문으로 건너뛰기</a>'''
+ return f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="{h(description)}"><meta name="theme-color" content="{color[0]}"><meta name="application-name" content="{h(name)}"><meta property="og:type" content="{'website' if home else 'article'}"><meta property="og:site_name" content="{h(name)}"><meta property="og:title" content="{h(seo_title)}"><meta property="og:description" content="{h(description)}"><meta property="og:image" content="{h(image)}"><meta name="twitter:card" content="summary_large_image"><link rel="alternate" type="application/rss+xml" title="{h(name)} RSS" href="{h(base+'/rss.xml')}">{canonical}<title>{h(seo_title)}</title><link rel="icon" type="image/x-icon" href="{h(base+'/favicon.ico')}"><link rel="icon" type="image/svg+xml" href="{h(base+'/favicon.svg')}"><link rel="apple-touch-icon" href="{h(base+'/apple-touch-icon.png')}"><link rel="stylesheet" href="/assets/style.css"><script type="application/ld+json">{schema_json}</script><script defer src="/assets/app.js"></script></head><body class="{kind}" style="--ink:{color[0]};--paper:{color[1]};--accent:{color[2]}"><a class="skip" href="#main">본문으로 건너뛰기</a>'''
 def blog_header(posts):
  return f'''<div class="utility"><div><span>블로그</span><a href="/#archive">전체 글</a></div></div><header class="blog-header"><div class="brand"><a href="/" class="brand-kicker">{h(SITE.get('english','INDEPENDENT JOURNAL'))}</a><a href="/" class="brand-name">{h(SITE['name'])}</a><p>{h(SITE.get('tagline',SITE['description']))}</p></div>{search_box()}</header>{nav(posts)}'''
 def cafe_header(posts):
@@ -99,10 +100,35 @@ def page(p,posts,home=False):
  if kind=='blog':main=f'<main id="main" class="blog-layout"><div class="main-column">{post(p,posts)}</div>{sidebar}</main>'
  else:main=f'<main id="main" class="cafe-layout">{sidebar}<div class="main-column">{post(p,posts)}</div></main>'
  return head(p,kind,home)+header+main+f'<footer class="footer"><span>{h(SITE["name"])} · 첫 방문과 상담을 읽는 기록</span><a href="/">맨 위로 ↑</a></footer></body></html>'
+def publish_feeds(posts):
+ base=SITE['site_url'].rstrip('/')
+ if not base.startswith('https://') or '/' in base[8:]:
+  raise ValueError('site_url must be an HTTPS origin without a path')
+ latest=max(p['date'] for p in posts)
+ entries=[f'<url><loc>{h(base+"/")}</loc><lastmod>{latest}</lastmod></url>']
+ for p in posts:
+  entries.append(f'<url><loc>{h(base+url(p))}</loc><lastmod>{h(p["date"])}</lastmod></url>')
+ sitemap='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+ '\n'.join(entries) +'\n</urlset>\n'
+ (ROOT/'sitemap.xml').write_text(sitemap,encoding='utf8')
+ def pub_date(d):
+  return format_datetime(datetime.combine(date.fromisoformat(d),datetime.min.time(),timezone.utc),usegmt=True)
+ items=[]
+ for p in posts:
+  link=base+url(p)
+  items.append(f'<item><title>{h(p["title"])}</title><link>{h(link)}</link><guid isPermaLink="true">{h(link)}</guid><description>{h(p["summary"])}</description><category>{h(p["category"])}</category><pubDate>{pub_date(p["date"])}</pubDate></item>')
+ rss='<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>'+h(SITE['name'])+'</title><link>'+h(base+'/')+'</link><description>'+h(SITE['description'])+'</description><language>ko-KR</language><lastBuildDate>'+pub_date(latest)+'</lastBuildDate><atom:link href="'+h(base+'/rss.xml')+'" rel="self" type="application/rss+xml"/>'+''.join(items)+'</channel></rss>\n'
+ (ROOT/'rss.xml').write_text(rss,encoding='utf8')
+ lines=['# '+SITE['name'],'','> '+SITE['description'],'','이 사이트는 신림왁싱 첫 방문 원고를 게시한 카페형 글 공간입니다. 사진은 연출 이미지입니다.','','## 글']
+ for p in posts:
+  lines.extend(['- ['+p['title']+']('+base+url(p)+'): '+p['summary']])
+ lines.extend(['','## 피드','- [RSS]('+base+'/rss.xml)','- [사이트맵]('+base+'/sitemap.xml)',''])
+ (ROOT/'llms.txt').write_text('\n'.join(lines),encoding='utf8')
+ (ROOT/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: '+base+'/sitemap.xml\n',encoding='utf8')
 def main():
  posts=load();(ROOT/'index.html').write_text(page(posts[0],posts,home=True),encoding='utf8')
  for p in posts:
   folder=ROOT/'blog'/p['slug'];folder.mkdir(parents=True,exist_ok=True)
   (folder/'index.html').write_text(page(p,posts),encoding='utf8')
+ publish_feeds(posts)
  print(f'{SITE["name"]}: article-first root + {len(posts)} /blog/ pages')
 if __name__=='__main__':main()
