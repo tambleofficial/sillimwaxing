@@ -1,0 +1,17 @@
+{
+  "slug": "new-post",
+  "title": "신림왁싱 새 글 제목",
+  "summary": "새 글의 핵심을 소개하는 한두 문장",
+  "meta_description": "신림왁싱 새 글의 검색 결과 설명",
+  "category": "상담 노트",
+  "date": "2026-09-29",
+  "author": "작성자",
+  "image": "waxing-thumbnail",
+  "image2": "waxing-room",
+  "body": [
+    "첫 번째 문단을 작성해 주세요.",
+    "두 번째 문단을 작성해 주세요."
+  ],
+  "comments": [],
+  "takeaways": []
+}

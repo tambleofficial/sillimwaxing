@@ -1,0 +1,17 @@
+{
+  "name": "신림왁싱",
+  "type": "community",
+  "description": "신림왁싱 첫 방문 후기와 상담을 읽는 공간",
+  "tagline": "첫 방문의 긴장부터 상담과 관리까지, 차분히 남긴 기록",
+  "seo_title": "신림왁싱 | 첫 방문 후기 · 브라질리언·슈가링·임산부 상담",
+  "colors": [
+    "#03c75a",
+    "#f1f8f3",
+    "#03c75a"
+  ],
+  "default_art": "waxing-thumbnail",
+  "english": "SILLIM WAXING JOURNAL",
+  "mark": "•",
+  "editor": "첫 방문 기록",
+  "site_url": ""
+}
